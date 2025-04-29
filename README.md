@@ -1,25 +1,54 @@
-# typescript-library-template
+# airtable-ts-formula
 
-Personal template for creating TypeScript libraries.
+⚗️📝 Type-safe, securely-escaped and rename-robust formulae for Airtable
 
-## Quick start
+These can be used as `filterByFormula` expressions on the API.
 
-1. If it should be published to NPM, add the `NPM_TOKEN` secret (make sure not to leave a trailing newline in there!). Otherwise, add `"private": true` in `package.json`.
-2. Update the package name, description and repo URL in `package.json`
-3. Enable 'Allow GitHub Actions to create and approve pull requests' in _Settings > Actions (General) > `Workflow permissions_
-4. Set protection on the master branch: require a pull request before merging, require reivew from code owners, require status checks to pass (select both ci options)
-5. Add the repo to the [file sync automation rules](https://github.com/domdomegg/domdomegg/blob/master/.github/workflows/repo-file-sync.yaml)
-6. Update the README, using the template commented out below
-
-<!--
-
-# TODO: name of library
-
-TODO: A short description of what the library does, explaining why people might want to use it.
+Designed to work particularly well with [airtable-ts](https://github.com/domdomegg/airtable-ts) (recommended) or [Airtable.js](https://github.com/airtable/airtable.js/).
 
 ## Usage
 
-TODO: usage instructions
+With airtable-ts
+
+```ts
+const db = new AirtableTs({
+  // Create your own at https://airtable.com/create/tokens
+  // Recommended scopes: schema.bases:read, data.records:read, data.records:write
+  apiKey: 'pat1234.abcdef',
+});
+
+// Tip: use airtable-ts-codegen to autogenerate these from your Airtable base
+export const studentTable: Table<{ id: string, firstName: string, enrollmentYear: number }> = {
+  name: 'student',
+  baseId: 'app1234',
+  tableId: 'tbl1234',
+  schema: { firstName: 'string', enrollmentYear: 'number' },
+  // required: use mappings with field ids to prevent renamings breaking your app,
+  //           or with field names to make handling renamings easy
+  mappings: { firstName: 'fld1234', enrollmentYear: 'Enrollment year' },
+};
+
+// Get students named Robert, who enrolled in the last 10 years
+const classes = await db.scan(studentTable, {
+    filterByFormula: const formula: Formula = formula(studentTable, [
+        'AND',
+        ['=', { field: 'firstName' }, "Robert"],
+        ['>=', { field: 'enrollmentYear' }, new Date().getFullYear() - 10],
+    ]);
+});
+```
+
+With Airtable.js
+
+```ts
+TODO
+```
+
+Without any library
+
+```ts
+TODO
+```
 
 ## Contributing
 
@@ -40,5 +69,3 @@ To release:
 1. Use `npm version <major | minor | patch>` to bump the version
 2. Run `git push --follow-tags` to push with tags
 3. Wait for GitHub Actions to publish to the NPM registry.
-
--->

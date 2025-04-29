@@ -1,12 +1,12 @@
 {
-  "name": "typescript-library-template",
+  "name": "airtable-ts-formula",
   "version": "0.0.0",
-  "description": "Template for creating TypeScript libraries",
+  "description": "Type-safe, securely-escaped and rename-robust formulae for Airtable",
   "license": "MIT",
   "author": "Adam Jones (domdomegg)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/domdomegg/typescript-library-template.git"
+    "url": "https://github.com/domdomegg/airtable-ts-formula.git"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,5 +28,8 @@
     "tsconfig-domdomegg": "^1.0.0",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
+  },
+  "dependencies": {
+    "@qualifyze/airtable-formulator": "^1.3.1"
   }
 }
