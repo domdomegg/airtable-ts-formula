@@ -78,6 +78,7 @@ export const reference = {
 		YEAR: {},
 		ARRAYCOMPACT: {},
 		ARRAYFLATTEN: {},
+		ARRAYSLICE: {},
 		ARRAYUNIQUE: {},
 		RECORD_ID: {},
 		REGEX_MATCH: {},
