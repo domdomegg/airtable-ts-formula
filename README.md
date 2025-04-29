@@ -4,7 +4,7 @@
 
 These can be used as `filterByFormula` expressions on the API.
 
-Designed to work particularly well with [airtable-ts](https://github.com/domdomegg/airtable-ts).
+Designed to work well with [airtable-ts](https://github.com/domdomegg/airtable-ts) (recommended) and [Airtable.js](https://github.com/Airtable/airtable.js), or can be called manually.
 
 ## Usage
 
@@ -12,8 +12,8 @@ With [airtable-ts](https://github.com/domdomegg/airtable-ts) (recommended)
 
 ```ts
 const db = new AirtableTs({
-// Create your own at https://airtable.com/create/tokens
-// Recommended scopes: schema.bases:read, data.records:read, data.records:write
+  // Create your own at https://airtable.com/create/tokens
+  // Recommended scopes: schema.bases:read, data.records:read, data.records:write
   apiKey: 'pat1234.abcdef',
 });
 
@@ -34,17 +34,95 @@ const students = await db.scan(studentTable, {
     'AND',
     // You'll get type checking on the field name (but not value)
     // If you've specified a fieldId in mappings, your formula will be rename-robust
-    // And finally any values will be escaped - so no injection attacks!
+    // And any values will be escaped - so no injection attacks!
     ['=', {field: 'firstName'}, 'Robert'],
     ['>=', {field: 'enrollmentYear'}, new Date().getFullYear() - 10],
   ]),
 });
 ```
 
+With [Airtable.js](https://github.com/Airtable/airtable.js)
+
+```ts
+import Airtable from 'airtable';
+import { formula, AirtableTsTable } from 'airtable-ts-formula';
+
+// Configure Airtable
+const airtable = new Airtable({
+  // Create your own at https://airtable.com/create/tokens
+  apiKey: 'pat1234.abcdef',
+});
+
+// Define your table structure with field names or ids
+const studentTable: AirtableTsTable<{id: string; 'First name': string; fld789: number}> = {
+  // Ideally get the fields live from Airtable, e.g. using the schema endpoints
+  // Unfortunately not supported natively in Airtable.js: https://github.com/Airtable/airtable.js/issues/12
+  fields: [
+    {id: 'fld123', name: 'id'},
+    {id: 'fld456', name: 'First name'},
+    {id: 'fld789', name: 'Age'},
+  ],
+};
+
+// Get students named Robert who are older than 35
+airtable.base('app1234')('tbl1234').select({
+  filterByFormula: formula(studentTable, [
+    'AND',
+    // You'll get type checking on the field name (but not value)
+    // If you've used a fieldId, your formula will be rename-robust
+    // And any values will be escaped - so no injection attacks!
+    ['=', {field: 'First name'}, 'Robert'],
+    ['>', {field: 'fld789'}, 35],
+  ]),
+}).eachPage((records, fetchNextPage) => {
+  // Do something with records
+  fetchNextPage();
+}, (err) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  console.log('All students retrieved');
+});
+```
+
 Manually
 
 ```ts
-TODO
+import { formula, AirtableTsTable } from 'airtable-ts-formula';
+
+// Define your table structure with field names or ids
+const studentTable: AirtableTsTable<{id: string; 'First name': string; fld789: number}> = {
+  // Ideally get the fields live from Airtable, e.g. using the schema endpoints
+  // You can do this with the base schema API: https://airtable.com/developers/web/api/get-base-schema
+  fields: [
+    {id: 'fld123', name: 'id'},
+    {id: 'fld456', name: 'First name'},
+    {id: 'fld789', name: 'Age'},
+  ],
+};
+
+// Create a formula string
+// Result: AND({First name}="Robert",{Age}>35)
+const filterFormula = formula(studentTable, [
+  'AND',
+  // You'll get type checking on the field name (but not value)
+  // If you've used a fieldId, your formula will be rename-robust
+  // And any values will be escaped - so no injection attacks!
+  ['=', {field: 'First name'}, 'Robert'],
+  ['>', {field: 'fld789'}, 35],
+]);
+
+// Example with fetch API
+const res = await fetch(`https://api.airtable.com/v0/app1234/tbl1234?filterByFormula=${encodeURIComponent(filterFormula)}`, {
+  headers: {
+    // Create your own at https://airtable.com/create/tokens
+    Authorization: 'Bearer pat1234.abcdef',
+  },
+});
+const data = await res.json();
+console.log(data);
 ```
 
 ## Contributing

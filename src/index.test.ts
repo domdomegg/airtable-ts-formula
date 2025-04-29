@@ -1,6 +1,7 @@
 import {test, expect} from 'vitest';
 import {formula, type Item, type AirtableTsTable} from './index';
 import {AirtableTs, type Table} from 'airtable-ts';
+import Airtable from 'airtable';
 
 type Student = {
 	id: string;
@@ -215,5 +216,147 @@ test('types work with airtable-ts table (error example)', async () => {
 				['<>', {field: 'firstName'}, 'Robert'],
 			]),
 		});
+	};
+});
+
+test('types work with airtable.js table (README example)', async () => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const justForTypeChecking = async () => {
+		// Configure Airtable
+		const airtable = new Airtable({
+			// Create your own at https://airtable.com/create/tokens
+			apiKey: 'pat1234.abcdef',
+		});
+
+		// Define your table structure with field names or ids
+		const studentTable: AirtableTsTable<{id: string; 'First name': string; fld789: number}> = {
+			// Ideally get this live from Airtable, e.g. using the schema endpoints
+			// Unfortunately not supported natively in Airtable.js: https://github.com/Airtable/airtable.js/issues/12
+			fields: [
+				{id: 'fld123', name: 'id'},
+				{id: 'fld456', name: 'First name'},
+				{id: 'fld789', name: 'Age'},
+			],
+		};
+
+		// Get students named Robert who are older than 35
+		airtable.base('app1234')('tbl1234').select({
+			filterByFormula: formula(studentTable, [
+				'AND',
+				['=', {field: 'First name'}, 'Robert'],
+				['>', {field: 'fld789'}, 35],
+			]),
+		}).eachPage((records, fetchNextPage) => {
+			// Do something with records
+			fetchNextPage();
+		}, (err) => {
+			if (err) {
+				console.error(err);
+				return;
+			}
+
+			console.log('All students retrieved');
+		});
+	};
+});
+
+test('types work with airtable.js table (error example)', async () => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const justForTypeChecking = async () => {
+		const airtable = new Airtable({
+			apiKey: 'pat1234.abcdef',
+		});
+
+		const studentTable: AirtableTsTable<{id: string; 'First name': string; fld789: number}> = {
+			fields: [
+				{id: 'fld123', name: 'id'},
+				{id: 'fld456', name: 'First name'},
+				{id: 'fld789', name: 'Age'},
+			],
+		};
+
+		// Get students named Robert who are older than 35
+		airtable.base('app1234')('tbl1234').select({
+			filterByFormula: formula(studentTable, [
+				'AND',
+				// @ts-expect-error: Should be first name
+				['=', {field: 'Last name'}, 'Robert'],
+				// @ts-expect-error: Should use field id, as this is what is on the type
+				['>', {field: 'Age'}, 35],
+			]),
+		});
+	};
+});
+
+test('types work with manual requests (README example)', async () => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const justForTypeChecking = async () => {
+		// Define your table structure with field names or ids
+		const studentTable: AirtableTsTable<{id: string; 'First name': string; fld789: number}> = {
+			// Ideally get the fields live from Airtable, e.g. using the schema endpoints
+			// You can do this with the base schema API: https://airtable.com/developers/web/api/get-base-schema
+			fields: [
+				{id: 'fld123', name: 'id'},
+				{id: 'fld456', name: 'First name'},
+				{id: 'fld789', name: 'Age'},
+			],
+		};
+
+		// Create a formula string
+		// Result: AND({First name}="Robert",{Age}>35)
+		const filterFormula = formula(studentTable, [
+			'AND',
+			['=', {field: 'First name'}, 'Robert'],
+			['>', {field: 'fld789'}, 35],
+		]);
+
+		// Example with fetch API
+		const res = await fetch(`https://api.airtable.com/v0/app1234/tbl1234?filterByFormula=${encodeURIComponent(filterFormula)}`, {
+			headers: {
+				// Create your own at https://airtable.com/create/tokens
+				Authorization: 'Bearer pat1234.abcdef',
+			},
+		});
+		const data = await res.json();
+		console.log(data);
+	};
+});
+
+test('manual example works (README example)', async () => {
+	const studentTable: AirtableTsTable<{id: string; 'First name': string; fld789: number}> = {
+		fields: [
+			{id: 'fld123', name: 'id'},
+			{id: 'fld456', name: 'First name'},
+			{id: 'fld789', name: 'Age'},
+		],
+	};
+
+	const filterFormula = formula(studentTable, [
+		'AND',
+		['=', {field: 'First name'}, 'Robert'],
+		['>', {field: 'fld789'}, 35],
+	]);
+
+	expect(filterFormula).toBe('AND({First name}="Robert",{Age}>35)');
+});
+
+test('types work with manual requests (error example)', async () => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const justForTypeChecking = async () => {
+		const studentTable: AirtableTsTable<{id: string; 'First name': string; fld789: number}> = {
+			fields: [
+				{id: 'fld123', name: 'id'},
+				{id: 'fld456', name: 'First name'},
+				{id: 'fld789', name: 'Age'},
+			],
+		};
+
+		formula(studentTable, [
+			'AND',
+			// @ts-expect-error: Should be first name
+			['=', {field: 'Last name'}, 'Robert'],
+			// @ts-expect-error: Should use field id, as this is what is on the type
+			['>', {field: 'Age'}, 35],
+		]);
 	};
 });
