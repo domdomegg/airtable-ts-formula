@@ -4,47 +4,44 @@
 
 These can be used as `filterByFormula` expressions on the API.
 
-Designed to work particularly well with [airtable-ts](https://github.com/domdomegg/airtable-ts) (recommended) or [Airtable.js](https://github.com/airtable/airtable.js/).
+Designed to work particularly well with [airtable-ts](https://github.com/domdomegg/airtable-ts).
 
 ## Usage
 
-With airtable-ts
+With [airtable-ts](https://github.com/domdomegg/airtable-ts) (recommended)
 
 ```ts
 const db = new AirtableTs({
-  // Create your own at https://airtable.com/create/tokens
-  // Recommended scopes: schema.bases:read, data.records:read, data.records:write
+// Create your own at https://airtable.com/create/tokens
+// Recommended scopes: schema.bases:read, data.records:read, data.records:write
   apiKey: 'pat1234.abcdef',
 });
 
 // Tip: use airtable-ts-codegen to autogenerate these from your Airtable base
-export const studentTable: Table<{ id: string, firstName: string, enrollmentYear: number }> = {
+const studentTable: Table<{id: string; firstName: string; enrollmentYear: number}> = {
   name: 'student',
   baseId: 'app1234',
   tableId: 'tbl1234',
-  schema: { firstName: 'string', enrollmentYear: 'number' },
-  // required: use mappings with field ids to prevent renamings breaking your app,
+  schema: {firstName: 'string', enrollmentYear: 'number'},
+  // optional: use mappings with field ids to prevent renamings breaking your app,
   //           or with field names to make handling renamings easy
-  mappings: { firstName: 'fld1234', enrollmentYear: 'Enrollment year' },
+  mappings: {firstName: 'fld1234', enrollmentYear: 'Enrollment year'},
 };
 
 // Get students named Robert, who enrolled in the last 10 years
-const classes = await db.scan(studentTable, {
-    filterByFormula: const formula: Formula = formula(studentTable, [
-        'AND',
-        ['=', { field: 'firstName' }, "Robert"],
-        ['>=', { field: 'enrollmentYear' }, new Date().getFullYear() - 10],
-    ]);
+const students = await db.scan(studentTable, {
+  filterByFormula: formula(await db.table(studentTable), [
+    'AND',
+    // You'll get type checking on the field name (but not value)
+    // If you've specified a fieldId in mappings, your formula will be rename-robust
+    // And finally any values will be escaped - so no injection attacks!
+    ['=', {field: 'firstName'}, 'Robert'],
+    ['>=', {field: 'enrollmentYear'}, new Date().getFullYear() - 10],
+  ]),
 });
 ```
 
-With Airtable.js
-
-```ts
-TODO
-```
-
-Without any library
+Manually
 
 ```ts
 TODO
