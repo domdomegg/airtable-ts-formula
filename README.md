@@ -11,6 +11,9 @@ Designed to work well with [airtable-ts](https://github.com/domdomegg/airtable-t
 With [airtable-ts](https://github.com/domdomegg/airtable-ts) (recommended)
 
 ```ts
+import { AirtableTs, Table } from 'airtable-ts';
+import { formula } from 'airtable-ts-formula';
+
 const db = new AirtableTs({
   // Create your own at https://airtable.com/create/tokens
   // Recommended scopes: schema.bases:read, data.records:read, data.records:write
