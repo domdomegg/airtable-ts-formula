@@ -1,10 +1,28 @@
 import {
 	type Formula as FormulatorFormula, compile,
 } from '@qualifyze/airtable-formulator';
-import {type AirtableTsTable, type Item} from 'airtable-ts';
 import {type reference} from './formulaReference';
 
-export {type AirtableTsTable, type Item};
+export type Item = {id: string};
+
+// We define this here separately from airtable-ts so:
+// - users can use provide a smaller set of arguments
+// - users don't have to install airtable-ts
+export type AirtableTsTable<T extends Item> = {
+	fields: {
+		id: string;
+		name: string;
+	}[];
+	tsDefinition?: {
+		schema: {
+			[k in keyof Omit<T, 'id'>]: string;
+		};
+		mappings?: {
+			[k in keyof Omit<T, 'id'>]: string | string[];
+		};
+	};
+	__brand?: T;
+};
 
 export type FunctionCall<T extends Item> = ArrayNotation<keyof typeof reference.functions, T>;
 export type Operation<T extends Item> = ArrayNotation<keyof typeof reference.operators, T>;
