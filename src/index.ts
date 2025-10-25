@@ -18,7 +18,7 @@ export type AirtableTsTable<T extends Item> = {
 			[k in keyof Omit<T, 'id'>]: string;
 		};
 		mappings?: {
-			[k in keyof Omit<T, 'id'>]: string;
+			[k in keyof Omit<T, 'id'>]: string | string[];
 		};
 	};
 	__brand?: T;
