@@ -1,6 +1,6 @@
 {
   "name": "airtable-ts-formula",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Type-safe, securely-escaped and rename-robust formulae for Airtable (e.g. for filterByFormula)",
   "license": "MIT",
   "author": "Adam Jones (domdomegg)",
