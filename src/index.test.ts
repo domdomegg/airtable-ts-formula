@@ -138,7 +138,7 @@ test('throws error if field not in fields', () => {
 			'AND',
 			['=', {field: 'firstName'}, 'Robert'],
 			['>', {field: 'age'}, 35],
-		])).toThrowError('Field not found in table: firstName');
+		])).toThrow('Field not found in table: firstName');
 });
 
 test('has type error if field not in tsDefinition', () => {
